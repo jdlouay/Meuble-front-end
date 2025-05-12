@@ -1,0 +1,71 @@
+package com.example.demo.Service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.Dto.LoginRequest;
+import com.example.demo.Repository.UserRepository;
+import com.example.demo.entity.User;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public ResponseEntity<User> saveUser(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            return ResponseEntity.badRequest().build(); // Email already exists
+        }
+
+        if (user.getRole() == null) {
+            user.setRole("USER");
+        }
+
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok(savedUser);
+    }
+
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
+    }
+
+    public ResponseEntity<Boolean> emailExists(String email) {
+        boolean exists = userRepository.existsByEmail(email);
+        return ResponseEntity.ok(exists);
+    }
+    
+    public ResponseEntity<?> deleteUser(Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
+
+        if (userOptional.isPresent()) {
+            userRepository.deleteById(id);
+            return ResponseEntity.ok().body("User deleted successfully");
+        } else {
+            return ResponseEntity.status(404).body("User not found");
+        }
+    }
+    
+    
+    public ResponseEntity<?> login(LoginRequest loginRequest) {
+        Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user.getPassword().equals(loginRequest.getPassword())) {
+                return ResponseEntity.ok(user); // Login successful
+            } else {
+                return ResponseEntity.status(401).body("Mot de passe incorrect");
+            }
+        } else {
+            return ResponseEntity.status(404).body("Utilisateur non trouvé");
+        }
+    }
+    
+    
+}

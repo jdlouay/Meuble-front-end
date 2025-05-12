@@ -1,0 +1,52 @@
+package com.example.demo.Service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.Repository.UserRepository;
+import com.example.demo.entity.User;
+
+import java.util.List;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public ResponseEntity<User> saveUser(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            return ResponseEntity.badRequest().build(); // Email already exists
+        }
+
+        if (user.getRole() == null) {
+            user.setRole("USER");
+        }
+
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok(savedUser);
+    }
+
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
+    }
+
+    public ResponseEntity<Boolean> emailExists(String email) {
+        boolean exists = userRepository.existsByEmail(email);
+        return ResponseEntity.ok(exists);
+    }
+    
+    public ResponseEntity<User> updateUser(Long id, User updatedUser) {
+        return userRepository.findById(id).map(user -> {
+            user.setNom(updatedUser.getNom());
+            user.setEmail(updatedUser.getEmail());
+            user.setMotDePasse(updatedUser.getMotDePasse());
+            user.setRole(updatedUser.getRole() != null ? updatedUser.getRole() : user.getRole());
+
+            User savedUser = userRepository.save(user);
+            return ResponseEntity.ok(savedUser);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+}

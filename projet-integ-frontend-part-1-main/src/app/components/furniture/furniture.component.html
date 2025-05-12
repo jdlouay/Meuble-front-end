@@ -1,0 +1,23 @@
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="relative h-64 overflow-hidden">
+      <img 
+        [src]="getImageUrl(furniture.image_url)" 
+        [alt]="furniture.name"
+        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+        (error)="onImageError($event)"
+      >
+    </div>
+    <div class="p-4">
+      <h3 class="text-xl font-semibold mb-2">{{ furniture.name }}</h3>
+      <p class="text-gray-600 mb-4 line-clamp-2">{{ furniture.description }}</p>
+      <div class="flex justify-between items-center">
+        <span class="text-2xl font-bold text-blue-600">{{ furniture.price | currency:'EUR' }}</span>
+        <button 
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          [routerLink]="['/furniture', furniture.id]"
+        >
+          Voir détails
+        </button>
+      </div>
+    </div>
+  </div>

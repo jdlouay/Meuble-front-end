@@ -1,0 +1,61 @@
+<div>
+    <h2>User List</h2>
+  
+    <!-- Search Section -->
+    <div class="search">
+      <input [(ngModel)]="searchNom" placeholder="Search by Name" />
+      <input [(ngModel)]="searchEmail" placeholder="Search by Email" />
+    </div>
+  
+    <!-- User Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers()">
+          <td>{{ user.nom }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            <button (click)="editUser(user)">Edit</button>
+            <button (click)="deleteUser(user.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <!-- Modal for Editing User -->
+    <div *ngIf="showModal" class="modal">
+      <div class="modal-content">
+        <h3>{{ isEditMode ? 'Edit User' : 'Add User' }}</h3>
+  
+        <form (ngSubmit)="saveUser()">
+          <div>
+            <label>Name</label>
+            <input [(ngModel)]="userForm.nom" name="nom" required />
+          </div>
+          <div>
+            <label>Email</label>
+            <input [(ngModel)]="userForm.email" name="email" required />
+          </div>
+          <div>
+            <label>Password</label>
+            <input [(ngModel)]="userForm.password" name="password" required type="password" />
+          </div>
+          <div>
+            <label>Role</label>
+            <input [(ngModel)]="userForm.role" name="role" required />
+          </div>
+          <button type="submit">{{ isEditMode ? 'Update' : 'Save' }}</button>
+          <button type="button" (click)="closeModal()">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  

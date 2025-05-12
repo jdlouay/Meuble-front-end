@@ -1,0 +1,65 @@
+<div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <h1 class="text-3xl font-bold mb-6 text-gray-900">Notre Collection de Meubles</h1>
+  
+  <!-- Filters Section -->
+  <div class="mb-6">
+    <div class="flex gap-4">
+      <!-- Category Filter -->
+      <select [(ngModel)]="filters.category" (change)="applyFilters()" class="px-4 py-2 border rounded-lg">
+        <option value="">Tous les catégories</option>
+        <option *ngFor="let category of categories" [value]="category.id">{{category.name}}</option>
+      </select>
+
+      <!-- Price Filter -->
+      <select [(ngModel)]="filters.price" (change)="applyFilters()" class="px-4 py-2 border rounded-lg">
+        <option value="">Tous les prix</option>
+        <option value="0-50">0€ - 50€</option>
+        <option value="51-100">51€ - 100€</option>
+        <option value="101-200">101€ - 200€</option>
+        <option value="201-">201€ et plus</option>
+      </select>
+
+      <!-- Sort Filter -->
+      <select [(ngModel)]="filters.sort" (change)="applyFilters()" class="px-4 py-2 border rounded-lg">
+        <option value="popular">Popularité</option>
+        <option value="price-asc">Prix croissant</option>
+        <option value="price-desc">Prix décroissant</option>
+        <option value="newest">Nouveautés</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Liste de produits -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let item of filteredFurnitureItems" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      <div class="relative h-64 overflow-hidden">
+        <img [src]="item.imageUrl" [alt]="item.name" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300">
+      </div>
+      <div class="p-4">
+        <h2 class="text-xl font-semibold mb-2 text-gray-900">{{ item.name }}</h2>
+        <p class="text-gray-600 mb-4">{{ item.description }}</p>
+        <div class="flex justify-between items-center">
+          <span class="text-xl font-bold text-gray-900">{{ item.price }} €</span>
+          <button class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Ajouter au panier
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="mt-8 flex justify-center">
+    <nav class="inline-flex rounded-md shadow">
+      <a href="#" (click)="changePage('previous')" class="py-2 px-4 bg-white border border-gray-300 rounded-l-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+        Précédent
+      </a>
+      <a *ngFor="let page of pageNumbers" href="#" (click)="changePage(page)" class="py-2 px-4 bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
+        {{ page }}
+      </a>
+      <a href="#" (click)="changePage('next')" class="py-2 px-4 bg-white border border-gray-300 rounded-r-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+        Suivant
+      </a>
+    </nav>
+  </div>
+</div>
