@@ -5,12 +5,14 @@ import { FurnitureService } from '../service/furniture.service';
 import { FormsModule } from '@angular/forms';
 import { CategoryServiceService } from '../../categoy/service/category-service.service';
 import { Category } from '../../categoy/class/category';
+import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-list-furniture',
-  imports: [CommonModule,FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './list-furniture.component.html',
-  styleUrl: './list-furniture.component.css'
+  styleUrl: './list-furniture.component.css',
 })
 export class ListFurnitureComponent {
   furnitureItems: Furniture[] = [];
@@ -30,7 +32,9 @@ export class ListFurnitureComponent {
 
   constructor(
     private furnitureService: FurnitureService,
-    private catservice: CategoryServiceService // Inject CategoryService
+    private catservice: CategoryServiceService,
+    private cartService: CartService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -79,7 +83,8 @@ export class ListFurnitureComponent {
     if (this.filters.price) {
       const priceRange = this.filters.price.split('-');
       const minPrice = parseInt(priceRange[0], 10);
-      const maxPrice = priceRange[1] === '+' ? Infinity : parseInt(priceRange[1], 10);
+      const maxPrice =
+        priceRange[1] === '+' ? Infinity : parseInt(priceRange[1], 10);
       filteredItems = filteredItems.filter((item) => {
         const price = item.price || 0;
         return price >= minPrice && price <= maxPrice;
@@ -88,9 +93,13 @@ export class ListFurnitureComponent {
 
     // Sort by selected option
     if (this.filters.sort === 'price-asc') {
-      filteredItems = filteredItems.sort((a, b) => (a.price || 0) - (b.price || 0));
+      filteredItems = filteredItems.sort(
+        (a, b) => (a.price || 0) - (b.price || 0)
+      );
     } else if (this.filters.sort === 'price-desc') {
-      filteredItems = filteredItems.sort((a, b) => (b.price || 0) - (a.price || 0));
+      filteredItems = filteredItems.sort(
+        (a, b) => (b.price || 0) - (a.price || 0)
+      );
     } else if (this.filters.sort === 'newest') {
       // Assuming a `createdAt` field exists on furniture items
       // filteredItems = filteredItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -107,7 +116,9 @@ export class ListFurnitureComponent {
   }
 
   updatePagination(): void {
-    const totalPages = Math.ceil(this.furnitureItems.length / this.itemsPerPage);
+    const totalPages = Math.ceil(
+      this.furnitureItems.length / this.itemsPerPage
+    );
     this.pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
@@ -120,5 +131,22 @@ export class ListFurnitureComponent {
       this.currentPage = page;
     }
     this.applyFilters(); // Reapply filters and pagination
+  }
+
+  ajouterAuPanier(item: Furniture) {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      alert('Vous devez être connecté pour ajouter au panier.');
+      return;
+    }
+    if (item.id === undefined || user.id === undefined) {
+      alert("Erreur : identifiant manquant pour l'utilisateur ou le meuble.");
+      return;
+    }
+    this.cartService.addToCartBackend(item.id, 1, user.id).subscribe({
+      next: () => alert('Meuble ajouté au panier (serveur) !'),
+      error: (err) =>
+        alert("Erreur lors de l'ajout au panier : " + err.message),
+    });
   }
 }

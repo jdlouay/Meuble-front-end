@@ -13,7 +13,7 @@ export interface CartItem {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CartService {
   private cartItems: CartItem[] = [];
@@ -43,7 +43,10 @@ export class CartService {
   }
 
   private updateCartItemCount() {
-    const count = this.cartItems.reduce((total, item) => total + item.quantity, 0);
+    const count = this.cartItems.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
     this.cartItemCountSubject.next(count);
   }
 
@@ -52,22 +55,24 @@ export class CartService {
   }
 
   addToCart(item: CartItem): void {
-    const existingItem = this.cartItems.find(i => i.productId === item.productId);
-    
+    const existingItem = this.cartItems.find(
+      (i) => i.productId === item.productId
+    );
+
     if (existingItem) {
       existingItem.quantity += item.quantity;
     } else {
       this.cartItems.push(item);
     }
-    
+
     this.cartSubject.next(this.cartItems);
     this.updateCartItemCount();
     this.saveCartToLocalStorage();
   }
 
   updateQuantity(productId: string, quantity: number): void {
-    const item = this.cartItems.find(i => i.productId === productId);
-    
+    const item = this.cartItems.find((i) => i.productId === productId);
+
     if (item) {
       item.quantity = quantity;
       if (item.quantity <= 0) {
@@ -81,7 +86,9 @@ export class CartService {
   }
 
   removeFromCart(productId: string): void {
-    this.cartItems = this.cartItems.filter(item => item.productId !== productId);
+    this.cartItems = this.cartItems.filter(
+      (item) => item.productId !== productId
+    );
     this.cartSubject.next(this.cartItems);
     this.updateCartItemCount();
     this.saveCartToLocalStorage();
@@ -102,4 +109,38 @@ export class CartService {
   saveCartToServer(): Observable<any> {
     return this.http.post(this.apiUrl, { items: this.cartItems });
   }
-} 
+
+  addToCartBackend(furnitureId: number, quantity: number, userId: number) {
+    return this.http.post(`${this.apiUrl}/add`, null, {
+      params: {
+        userId: userId,
+        furnitureId: furnitureId,
+        quantity: quantity,
+      },
+    });
+  }
+
+  getCartFromBackend(userId: number) {
+    return this.http.get<any[]>(`${this.apiUrl}`, { params: { userId } });
+  }
+
+  setCartFromBackend(items: any[]) {
+    this.cartItems = items.map((item) => ({
+      id: item.id.toString(),
+      productId: item.furniture.id.toString(),
+      name: item.furniture.name,
+      price: item.furniture.price,
+      quantity: item.quantity,
+      imageUrl: item.furniture.image_url,
+    }));
+    this.cartSubject.next(this.cartItems);
+    this.updateCartItemCount();
+    this.saveCartToLocalStorage();
+  }
+
+  checkout(userId: number, paymentMode: string) {
+    return this.http.post(`${this.apiUrl}/cart/checkout`, null, {
+      params: { userId, paymentMode },
+    });
+  }
+}
